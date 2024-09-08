@@ -15,12 +15,9 @@ from urllib.parse import urlparse
 
 LOGIN_URL = "https://portal.wekyc.io/auth/login"
 DISCOVERY_URL = "https://portal.wekyc.io/merchant/completed_kyc_links"
-EMAIL = "trade@dollarpe.com"
-PASSWORD = "Doll@rPe@10"
-ORDER_ID = "22664725443653197824"
-# EMAIL = "ujjawal.cool.singh@gmail.com"
-# PASSWORD = "ujjawal@123"
-# ORDER_ID = "1234"
+EMAIL = ""
+PASSWORD = ""
+ORDER_ID = ""
 
 
 # Calculate the date one month back from today
@@ -59,8 +56,10 @@ def login_to_we_kyc(driver):
         with open('data.csv', 'a+', newline='', encoding='utf-8') as csvfile:
             writer = csv.writer(csvfile, delimiter=',')
             writer.writerows(csv_headers)
-        #order_ids = [22664725443653197824, 22664671480721555456, 22664645646787457024, 22664641967019352064, 22664640508235988992, 22664636670456680448, 22664635744585043968, 22664635154607255552, 22664619142248124416]
-        order_ids=[22664619142248124416]
+        
+        with open('order_ids.csv', newline='', encoding='utf-8') as csvfile:
+            reader = csv.reader(csvfile)
+            order_ids = [row[0] for row in reader]
         for order_id in order_ids:
             time.sleep(2)
             driver.get(DISCOVERY_URL)  # Navigate to target url
