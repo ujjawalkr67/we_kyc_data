@@ -5,12 +5,10 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from datetime import datetime, timedelta
-import requests
 import csv
 import os
 import base64
 import re
-from urllib.parse import urlparse
 
 
 LOGIN_URL = "https://portal.wekyc.io/auth/login"
@@ -20,9 +18,8 @@ PASSWORD = ""
 ORDER_ID = ""
 
 
-# Calculate the date one month back from today
 one_month_ago = (datetime.now() - timedelta(days=30)).strftime('%d-%m-%Y')
-#print(one_month_ago)
+# print(one_month_ago)
 driver = webdriver.Chrome()
 
 
@@ -31,17 +28,17 @@ def login_to_we_kyc(driver):
     try:
         email_input = WebDriverWait(driver, 50).until(
             EC.visibility_of_element_located((By.NAME, 'email'))
-        )  # Wait for email feild to be visible
+        )
 
-        email_input.send_keys(EMAIL)  # Populate input field
+        email_input.send_keys(EMAIL)  
 
         password_input = WebDriverWait(driver, 50).until(
             EC.visibility_of_element_located((By.NAME, 'password'))
-        )  # Wait for password field to be visible
+        )
 
-        password_input.send_keys(PASSWORD)  # Populate input field
-        password_input.send_keys(Keys.RETURN)  # Press enter
-        time.sleep(5)  # Wait for browser to login
+        password_input.send_keys(PASSWORD)  
+        password_input.send_keys(Keys.RETURN) 
+        time.sleep(5)
         csv_headers = [["Order_Id", "Created_At", "Name", "Mobile_No",
                         "Status", "Adhar_name", "Aadhar_No","Adhar_selfie_url", "Date_Of_Birth",
                         "Country", "State", "District","Sub_District",
@@ -62,7 +59,7 @@ def login_to_we_kyc(driver):
             order_ids = [row[0] for row in reader]
         for order_id in order_ids:
             time.sleep(2)
-            driver.get(DISCOVERY_URL)  # Navigate to target url
+            driver.get(DISCOVERY_URL) 
             time.sleep(5)
             set_search_filters(driver, one_month_ago, order_id)
 
@@ -72,21 +69,21 @@ def login_to_we_kyc(driver):
 
 def set_search_filters(driver, date, order_id):
     try:
-        # Wait for the "from date" input field and set the date
+
         from_date_input = WebDriverWait(driver, 50).until(
             EC.visibility_of_element_located((By.NAME, 'from_date'))
         )
-        from_date_input.clear()  # Clear the current value
-        from_date_input.send_keys(date)  # Set the date one month back
-        from_date_input.send_keys(Keys.RETURN)  # Hit Enter to submit the date
+        from_date_input.clear()  
+        from_date_input.send_keys(date) 
+        from_date_input.send_keys(Keys.RETURN)  
         time.sleep(5)
-        # Input the order ID in the order ID field
+
         order_id_input = WebDriverWait(driver, 50).until(
             EC.visibility_of_element_located((By.NAME, 'client_txn_id'))
         )
         order_id_input.send_keys(order_id)
         order_id_input.send_keys(Keys.RETURN)
-        time.sleep(5)  # Wait for the search results to load
+        time.sleep(5)  
 
         first_result_link = WebDriverWait(driver, 50).until(
             EC.element_to_be_clickable((By.XPATH, '//*[@id="tab_block_1"]/div/div/div/div[2]/div/div[1]/table/tbody/tr[1]/td[7]/a'))
@@ -203,7 +200,7 @@ def scrape_user_data(driver):
         data_row_list.append(OS.text)
         Device = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[10]/div/div[2]/div/div[5]/div/h6')
         data_row_list.append(Device.text)
-        
+
         Document_Link_Status = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[11]/div/div[2]/div[2]/div[2]/div/h6')
         data_row_list.append(Document_Link_Status.text)
 
@@ -214,7 +211,7 @@ def scrape_user_data(driver):
         data_list.append(data_row_list)
         with open('data.csv', 'a+', newline='', encoding='utf-8') as csvfile:
             writer = csv.writer(csvfile, delimiter=',')
-            writer.writerows(data_list)  # Creates CSV with headers
+            writer.writerows(data_list) 
 
         download_image_with_session(driver, image_url,
                                     os.path.abspath('selfie_images'),
@@ -236,10 +233,9 @@ def download_image(image_url, file_path):
             img_file.write(image_data)
         print(f"Base64 image saved as {file_path}.{image_format}")
     else:
-        # It's a regular URL, download it
+
         response = requests.get(image_url)
         if response.status_code == 200:
-            # Parse the URL to get the file extension
             file_extension = image_url.split(".")[-1]
             with open(f"{file_path}.{file_extension}", "wb") as img_file:
                 img_file.write(response.content)
