@@ -7,25 +7,30 @@ from selenium.webdriver.common.keys import Keys
 from datetime import datetime, timedelta
 import requests
 import csv
+import os
+import base64
+import re
+from urllib.parse import urlparse
+
 
 LOGIN_URL = "https://portal.wekyc.io/auth/login"
 DISCOVERY_URL = "https://portal.wekyc.io/merchant/completed_kyc_links"
 EMAIL = "trade@dollarpe.com"
 PASSWORD = "Doll@rPe@10"
 ORDER_ID = "22664725443653197824"
-#EMAIL = "ujjawal.cool.singh@gmail.com"
+# EMAIL = "ujjawal.cool.singh@gmail.com"
 # PASSWORD = "ujjawal@123"
 # ORDER_ID = "1234"
 
 
 # Calculate the date one month back from today
 one_month_ago = (datetime.now() - timedelta(days=30)).strftime('%d-%m-%Y')
-print(one_month_ago)
+#print(one_month_ago)
 driver = webdriver.Chrome()
 
 
 def login_to_we_kyc(driver):
-    driver.get(LOGIN_URL)# Open hyperauditor.com
+    driver.get(LOGIN_URL)
     try:
         email_input = WebDriverWait(driver, 50).until(
             EC.visibility_of_element_located((By.NAME, 'email'))
@@ -54,9 +59,13 @@ def login_to_we_kyc(driver):
         with open('data.csv', 'a+', newline='', encoding='utf-8') as csvfile:
             writer = csv.writer(csvfile, delimiter=',')
             writer.writerows(csv_headers)
-
-        driver.get(DISCOVERY_URL)  # Navigate to target url
-        time.sleep(5)
+        #order_ids = [22664725443653197824, 22664671480721555456, 22664645646787457024, 22664641967019352064, 22664640508235988992, 22664636670456680448, 22664635744585043968, 22664635154607255552, 22664619142248124416]
+        order_ids=[22664619142248124416]
+        for order_id in order_ids:
+            time.sleep(2)
+            driver.get(DISCOVERY_URL)  # Navigate to target url
+            time.sleep(5)
+            set_search_filters(driver, one_month_ago, order_id)
 
     except Exception as e:
         raise e
@@ -99,11 +108,11 @@ def scrape_user_data(driver):
         data_row_list = []
         order_id = '//*[@id="tab_block_1"]/div/div/div[2]/div/div/div/div/div/div[1]/div/h6'
         order = wait.until(EC.presence_of_element_located((By.XPATH, order_id)))
-        print(order.text)
+        order_number = order.text
+        data_row_list.append(order.text)
 
         Created_at = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[2]/div/div/div/div/div/div[2]/div/h6')
-        data_row_list.append(Created_at.text)
-        
+        data_row_list.append(Created_at.text)    
         Name = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[2]/div/div/div/div/div/div[3]/div/h6')
         data_row_list.append(Name.text)
 
@@ -114,7 +123,7 @@ def scrape_user_data(driver):
         data_row_list.append(Status.text)
 
         time.sleep(3)
-        open_link = WebDriverWait(driver, 50).until(
+        open_link = WebDriverWait(driver, 10).until(
             EC.element_to_be_clickable((By.XPATH, '//*[@id="tab_block_1"]/div/div/div[3]/div/div[3]/div/a'))
         )
         driver.execute_script("arguments[0].click();", open_link)
@@ -130,6 +139,10 @@ def scrape_user_data(driver):
         Adhar_selfie_url = driver.find_element(By.XPATH, '//*[@id="view_aadhar_detail"]/div/div/div[2]/div[2]/div/div[2]/img')
         image_url2 = Adhar_selfie_url.get_attribute('src')
         data_row_list.append(image_url2)
+        output_dir = os.path.abspath('aadhaar_images')
+        file_name = f'{order_number}_aadhaar.png'
+        file_path = os.path.join(output_dir, file_name)
+        download_image(image_url2, file_path)
 
         Date_Of_Birth = driver.find_element(By.XPATH, '//*[@id="dob"]')
         data_row_list.append(Date_Of_Birth.text)
@@ -146,16 +159,17 @@ def scrape_user_data(driver):
         data_row_list.append(Village.text)
         Address = driver.find_element(By.XPATH, '//*[@id="address"]')
         data_row_list.append(Address.text)
+
         close_button = WebDriverWait(driver, 50).until(
             EC.element_to_be_clickable((By.XPATH, '//*[@id="view_aadhar_detail"]/div/div/div[3]/button'))
         )
         close_button.click()
-        time.sleep(2) 
+        time.sleep(2)
 
-        #pan information
+        # pan information
         PAN_Document_No = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[4]/div/div[2]/div[2]/div[1]/div/h6')
         data_row_list.append(PAN_Document_No.text)
-        PAN_Name = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[4]/div/div[2]/div[2]/div[1]/div/h6')
+        PAN_Name = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[4]/div/div[2]/div[2]/div[2]/div/h6')
         data_row_list.append(PAN_Name.text)
 
         Aadhaar_Kyc_User_Mobile_match_status = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[7]/div/div[2]/div[2]/div[2]/div/h6')
@@ -163,7 +177,7 @@ def scrape_user_data(driver):
         Selfie_Match_Percentage = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[8]/div/div[2]/div[2]/div[2]/div/h4')
         data_row_list.append(Selfie_Match_Percentage.text)
 
-        #historial order
+        # historial order
         Completed_Order = driver.find_element(By.XPATH, ' //*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[1]/div/h6')
         data_row_list.append(Completed_Order.text)
 
@@ -179,7 +193,7 @@ def scrape_user_data(driver):
         Finish_Rate = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[5]/div/h6')
         data_row_list.append(Finish_Rate.text)
 
-        #device INfo
+        # device INfo
         IP = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[10]/div/div[2]/div/div[1]/div/h6/span')
         data_row_list.append(IP.text)
         Browser = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[10]/div/div[2]/div/div[2]/div/h6')
@@ -190,8 +204,10 @@ def scrape_user_data(driver):
         data_row_list.append(OS.text)
         Device = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[10]/div/div[2]/div/div[5]/div/h6')
         data_row_list.append(Device.text)
+        
         Document_Link_Status = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[11]/div/div[2]/div[2]/div[2]/div/h6')
         data_row_list.append(Document_Link_Status.text)
+
         selfie_url = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[5]/div/div[2]/div/div/img')
         image_url = selfie_url.get_attribute('src')
         data_row_list.append(image_url)
@@ -201,10 +217,54 @@ def scrape_user_data(driver):
             writer = csv.writer(csvfile, delimiter=',')
             writer.writerows(data_list)  # Creates CSV with headers
 
-
+        download_image_with_session(driver, image_url,
+                                    os.path.abspath('selfie_images'),
+                                    f'{order_number}_selfie.png')
 
     except Exception as e:
         raise e
+
+
+def download_image(image_url, file_path):
+    if image_url.startswith("data:image"):
+
+        header, encoded = image_url.split(",", 1)
+        image_data = base64.b64decode(encoded)
+
+        image_format = re.search(r"data:image/(\w+);base64", header).group(1)
+
+        with open(f"{file_path}.{image_format}", "wb") as img_file:
+            img_file.write(image_data)
+        print(f"Base64 image saved as {file_path}.{image_format}")
+    else:
+        # It's a regular URL, download it
+        response = requests.get(image_url)
+        if response.status_code == 200:
+            # Parse the URL to get the file extension
+            file_extension = image_url.split(".")[-1]
+            with open(f"{file_path}.{file_extension}", "wb") as img_file:
+                img_file.write(response.content)
+            print(f"Image downloaded and saved as {file_path}.{file_extension}")
+        else:
+            print(f"Failed to download image from {image_url}")
+
+
+def download_image_with_session(driver, image_url, save_path, filename):
+    try:
+        cookies = driver.get_cookies()
+        session = requests.Session()
+
+        for cookie in cookies:
+            session.cookies.set(cookie['name'], cookie['value'])
+
+        response = session.get(image_url)
+        response.raise_for_status()
+        with open(os.path.join(save_path, filename), 'wb') as file:
+            file.write(response.content)
+        print(f"Image saved as {filename}")
+    except Exception as e:
+        print(f"Failed to download image {image_url}: {str(e)}")
+
 
 try:
     login_to_we_kyc(driver)
