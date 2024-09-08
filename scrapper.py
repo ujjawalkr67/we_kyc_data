@@ -1,22 +1,21 @@
+import re
+import os
+import csv
+import base64
+import requests
 import time
+from datetime import datetime, timedelta
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
-from datetime import datetime, timedelta
-import csv
-import os
-import base64
-import re
-
 
 LOGIN_URL = "https://portal.wekyc.io/auth/login"
 DISCOVERY_URL = "https://portal.wekyc.io/merchant/completed_kyc_links"
 EMAIL = ""
 PASSWORD = ""
 ORDER_ID = ""
-
 
 one_month_ago = (datetime.now() - timedelta(days=30)).strftime('%d-%m-%Y')
 # print(one_month_ago)
@@ -30,36 +29,36 @@ def login_to_we_kyc(driver):
             EC.visibility_of_element_located((By.NAME, 'email'))
         )
 
-        email_input.send_keys(EMAIL)  
+        email_input.send_keys(EMAIL)
 
         password_input = WebDriverWait(driver, 50).until(
             EC.visibility_of_element_located((By.NAME, 'password'))
         )
 
-        password_input.send_keys(PASSWORD)  
-        password_input.send_keys(Keys.RETURN) 
+        password_input.send_keys(PASSWORD)
+        password_input.send_keys(Keys.RETURN)
         time.sleep(5)
         csv_headers = [["Order_Id", "Created_At", "Name", "Mobile_No",
-                        "Status", "Adhar_name", "Aadhar_No","Adhar_selfie_url", "Date_Of_Birth",
-                        "Country", "State", "District","Sub_District",
-                        "Village/City", "Address", "PAN_Document_No",
-                        "PAN_Name", "Aadhaar_Kyc_User_Mobile_match_status",
+                        "Status", "Adhar_name", "Aadhar_No",
+                        "Adhar_selfie_url", "Date_Of_Birth", "Country",
+                        "State", "District", "Sub_District", "Village/City",
+                        "Address", "PAN_Document_No", "PAN_Name",
+                        "Aadhaar_Kyc_User_Mobile_match_status",
                         "Selfie_Match_Percentage", "Completed_Order",
                         "Finish_Rate_100", "Register_Days",
                         "Completed_Order_Num", "Finish_Rate", "IP",
                         "Browser", "Browser_Version", "OS", "Device",
-                        "Document_Link_Status",
-                        "selfie_url"]]
+                        "Document_Link_Status", "selfie_url"]]
         with open('data.csv', 'a+', newline='', encoding='utf-8') as csvfile:
             writer = csv.writer(csvfile, delimiter=',')
             writer.writerows(csv_headers)
-        
+
         with open('order_ids.csv', newline='', encoding='utf-8') as csvfile:
             reader = csv.reader(csvfile)
             order_ids = [row[0] for row in reader]
         for order_id in order_ids:
             time.sleep(2)
-            driver.get(DISCOVERY_URL) 
+            driver.get(DISCOVERY_URL)
             time.sleep(5)
             set_search_filters(driver, one_month_ago, order_id)
 
@@ -73,9 +72,9 @@ def set_search_filters(driver, date, order_id):
         from_date_input = WebDriverWait(driver, 50).until(
             EC.visibility_of_element_located((By.NAME, 'from_date'))
         )
-        from_date_input.clear()  
-        from_date_input.send_keys(date) 
-        from_date_input.send_keys(Keys.RETURN)  
+        from_date_input.clear()
+        from_date_input.send_keys(date)
+        from_date_input.send_keys(Keys.RETURN)
         time.sleep(5)
 
         order_id_input = WebDriverWait(driver, 50).until(
@@ -83,7 +82,7 @@ def set_search_filters(driver, date, order_id):
         )
         order_id_input.send_keys(order_id)
         order_id_input.send_keys(Keys.RETURN)
-        time.sleep(5)  
+        time.sleep(5)
 
         first_result_link = WebDriverWait(driver, 50).until(
             EC.element_to_be_clickable((By.XPATH, '//*[@id="tab_block_1"]/div/div/div/div[2]/div/div[1]/table/tbody/tr[1]/td[7]/a'))
@@ -102,13 +101,16 @@ def scrape_user_data(driver):
     try:
         data_list = []
         data_row_list = []
-        order_id = '//*[@id="tab_block_1"]/div/div/div[2]/div/div/div/div/div/div[1]/div/h6'
-        order = wait.until(EC.presence_of_element_located((By.XPATH, order_id)))
+        order_id = ('//*[@id="tab_block_1"]/div/div/div[2]/div/div/div/div/div/div[1]/div/h6')
+
+        order = wait.until(
+            EC.presence_of_element_located((By.XPATH, order_id))
+        )
         order_number = order.text
         data_row_list.append(order.text)
 
         Created_at = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[2]/div/div/div/div/div/div[2]/div/h6')
-        data_row_list.append(Created_at.text)    
+        data_row_list.append(Created_at.text)
         Name = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[2]/div/div/div/div/div/div[3]/div/h6')
         data_row_list.append(Name.text)
 
@@ -211,7 +213,7 @@ def scrape_user_data(driver):
         data_list.append(data_row_list)
         with open('data.csv', 'a+', newline='', encoding='utf-8') as csvfile:
             writer = csv.writer(csvfile, delimiter=',')
-            writer.writerows(data_list) 
+            writer.writerows(data_list)
 
         download_image_with_session(driver, image_url,
                                     os.path.abspath('selfie_images'),
@@ -239,7 +241,9 @@ def download_image(image_url, file_path):
             file_extension = image_url.split(".")[-1]
             with open(f"{file_path}.{file_extension}", "wb") as img_file:
                 img_file.write(response.content)
-            print(f"Image downloaded and saved as {file_path}.{file_extension}")
+            print(
+                f"Image downloaded and saved as {file_path}.{file_extension}"
+            )
         else:
             print(f"Failed to download image from {image_url}")
 
