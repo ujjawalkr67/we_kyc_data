@@ -197,10 +197,27 @@ def scrape_user_data(driver):
 
                 Finish_Rate = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[5]/div/h6')
                 data_row_list.append(Finish_Rate.text)
-            else:
+            elif name.text == "Register Days":
                 data_row_list.append("none")
                 data_row_list.append("none")
                 Register_Days = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[1]/div/h6')
+                data_row_list.append(Register_Days.text)
+
+                Completed_Order_Num = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[2]/div/h6')
+                if Completed_Order_Num:
+                    data_row_list.append(Completed_Order_Num.text)
+                else:
+                    data_row_list.append("None")
+
+                Finish_Rate = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[3]/div/h6')
+                if Finish_Rate:
+                    data_row_list.append(Finish_Rate.text)
+                else:
+                    data_row_list.append("None")
+            else:
+                data_row_list.append("none")
+                data_row_list.append("none") 
+                Register_Days = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div/div/h6')
                 data_row_list.append(Register_Days.text)
 
                 Completed_Order_Num = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[2]/div/h6')
@@ -255,7 +272,7 @@ def scrape_user_data(driver):
         data_row_list.append(image_url)
 
         data_list.append(data_row_list)
-        with open('data1.csv', 'a+', newline='', encoding='utf-8') as csvfile:
+        with open('data.csv', 'a+', newline='', encoding='utf-8') as csvfile:
             writer = csv.writer(csvfile, delimiter=',')
             writer.writerows(data_list)
 
