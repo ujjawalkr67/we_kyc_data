@@ -13,9 +13,8 @@ from selenium.webdriver.common.keys import Keys
 
 LOGIN_URL = "https://portal.wekyc.io/auth/login"
 DISCOVERY_URL = "https://portal.wekyc.io/merchant/completed_kyc_links"
-EMAIL = ""
-PASSWORD = ""
-ORDER_ID = ""
+EMAIL = "trade@dollarpe.com"
+PASSWORD = "Doll@rPe@10"
 
 
 one_month_ago = (datetime.now() - timedelta(days=30)).strftime('%d-%m-%Y')
@@ -58,7 +57,6 @@ def login_to_we_kyc(driver):
         with open('order_ids.csv', newline='', encoding='utf-8') as csvfile:
             reader = csv.reader(csvfile)
             order_ids = [row[0] for row in reader]
-
         for order_id in order_ids:
             time.sleep(2)
             driver.get(DISCOVERY_URL)
@@ -181,56 +179,49 @@ def scrape_user_data(driver):
         # historial order
         element1 = driver.find_elements(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[1]/h6')
         if element1:
-            name = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[3]/div/div/p')
-            if name.text == "Completed Order Num Of Latest 30 day" :
-                Completed_Order = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[1]/div/h6')
-                data_row_list.append(Completed_Order.text)
-
-                Finish_Rate_100 = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[2]/div/h6')
-                data_row_list.append(Finish_Rate_100.text)
-
-                Register_Days = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[3]/div/h6')
-                data_row_list.append(Register_Days.text)
-
-                Completed_Order_Num = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[4]/div/h6')
-                data_row_list.append(Completed_Order_Num.text)
-
-                Finish_Rate = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[5]/div/h6')
-                data_row_list.append(Finish_Rate.text)
-            elif name.text == "Register Days":
+            name1 = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div/div/div/p')
+            if name1:
                 data_row_list.append("none")
                 data_row_list.append("none")
-                Register_Days = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[1]/div/h6')
-                data_row_list.append(Register_Days.text)
-
-                Completed_Order_Num = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[2]/div/h6')
-                if Completed_Order_Num:
-                    data_row_list.append(Completed_Order_Num.text)
-                else:
-                    data_row_list.append("None")
-
-                Finish_Rate = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[3]/div/h6')
-                if Finish_Rate:
-                    data_row_list.append(Finish_Rate.text)
-                else:
-                    data_row_list.append("None")
-            else:
-                data_row_list.append("none")
-                data_row_list.append("none") 
                 Register_Days = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div/div/h6')
                 data_row_list.append(Register_Days.text)
+                data_row_list.append("None")
+                data_row_list.append("None")
+            else:
+                name = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[1]/div/div/p')
+                if name.text == "Completed Order Num Of Latest 30 day" :
+                    Completed_Order = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[1]/div/h6')
+                    data_row_list.append(Completed_Order.text)
 
-                Completed_Order_Num = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[2]/div/h6')
-                if Completed_Order_Num:
+                    Finish_Rate_100 = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[2]/div/h6')
+                    data_row_list.append(Finish_Rate_100.text)
+
+                    Register_Days = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[3]/div/h6')
+                    data_row_list.append(Register_Days.text)
+
+                    Completed_Order_Num = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[4]/div/h6')
                     data_row_list.append(Completed_Order_Num.text)
-                else:
-                    data_row_list.append("None")
 
-                Finish_Rate = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[3]/div/h6')
-                if Finish_Rate:
+                    Finish_Rate = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[5]/div/h6')
                     data_row_list.append(Finish_Rate.text)
                 else:
-                    data_row_list.append("None")
+                    data_row_list.append("none")
+                    data_row_list.append("none")
+                    Register_Days = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[1]/div/h6')
+                    data_row_list.append(Register_Days.text)
+
+                    Completed_Order_Num = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[2]/div/h6')
+                    if Completed_Order_Num:
+                        data_row_list.append(Completed_Order_Num.text)
+                    else:
+                        data_row_list.append("None")
+
+                    Finish_Rate = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[3]/div/h6')
+                    if Finish_Rate:
+                        data_row_list.append(Finish_Rate.text)
+                    else:
+                        data_row_list.append("None")
+            
 
         else:
             data_row_list.append("None")
