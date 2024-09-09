@@ -204,10 +204,16 @@ def scrape_user_data(driver):
                 data_row_list.append(Register_Days.text)
 
                 Completed_Order_Num = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[2]/div/h6')
-                data_row_list.append(Completed_Order_Num.text)
+                if Completed_Order_Num:
+                    data_row_list.append(Completed_Order_Num.text)
+                else:
+                    data_row_list.append("None")
 
                 Finish_Rate = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[3]/div/h6')
-                data_row_list.append(Finish_Rate.text)
+                if Finish_Rate:
+                    data_row_list.append(Finish_Rate.text)
+                else:
+                    data_row_list.append("None")
 
         else:
             data_row_list.append("None")
