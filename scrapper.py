@@ -9,13 +9,13 @@ import csv
 import os
 import base64
 import re
+import requests
 
 
 LOGIN_URL = "https://portal.wekyc.io/auth/login"
 DISCOVERY_URL = "https://portal.wekyc.io/merchant/completed_kyc_links"
 EMAIL = ""
 PASSWORD = ""
-ORDER_ID = ""
 
 
 one_month_ago = (datetime.now() - timedelta(days=30)).strftime('%d-%m-%Y')
@@ -50,13 +50,14 @@ def login_to_we_kyc(driver):
                         "Browser", "Browser_Version", "OS", "Device",
                         "Document_Link_Status",
                         "selfie_url"]]
-        with open('data.csv', 'a+', newline='', encoding='utf-8') as csvfile:
+        with open('data1.csv', 'a+', newline='', encoding='utf-8') as csvfile:
             writer = csv.writer(csvfile, delimiter=',')
             writer.writerows(csv_headers)
         
         with open('order_ids.csv', newline='', encoding='utf-8') as csvfile:
             reader = csv.reader(csvfile)
             order_ids = [row[0] for row in reader]
+
         for order_id in order_ids:
             time.sleep(2)
             driver.get(DISCOVERY_URL) 
@@ -174,42 +175,77 @@ def scrape_user_data(driver):
         data_row_list.append(Selfie_Match_Percentage.text)
 
         # historial order
-        Completed_Order = driver.find_element(By.XPATH, ' //*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[1]/div/h6')
-        data_row_list.append(Completed_Order.text)
+        element1 = driver.find_elements(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[1]/h6')
+        if element1:
+            name = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[3]/div/div/p')
+            if name.text == "Completed Order Num Of Latest 30 day" :
+                Completed_Order = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[1]/div/h6')
+                data_row_list.append(Completed_Order.text)
 
-        Finish_Rate_100 = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[2]/div/h6')
-        data_row_list.append(Finish_Rate_100.text)
+                Finish_Rate_100 = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[2]/div/h6')
+                data_row_list.append(Finish_Rate_100.text)
 
-        Register_Days = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[3]/div/h6')
-        data_row_list.append(Register_Days.text)
+                Register_Days = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[3]/div/h6')
+                data_row_list.append(Register_Days.text)
 
-        Completed_Order_Num = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[4]/div/h6')
-        data_row_list.append(Completed_Order_Num.text)
+                Completed_Order_Num = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[4]/div/h6')
+                data_row_list.append(Completed_Order_Num.text)
 
-        Finish_Rate = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[5]/div/h6')
-        data_row_list.append(Finish_Rate.text)
+                Finish_Rate = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[5]/div/h6')
+                data_row_list.append(Finish_Rate.text)
+            else:
+                data_row_list.append("none")
+                data_row_list.append("none")
+                Register_Days = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[1]/div/h6')
+                data_row_list.append(Register_Days.text)
+
+                Completed_Order_Num = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[2]/div/h6')
+                data_row_list.append(Completed_Order_Num.text)
+
+                Finish_Rate = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[9]/div/div[2]/div/div[3]/div/h6')
+                data_row_list.append(Finish_Rate.text)
+
+        else:
+            data_row_list.append("None")
+            data_row_list.append("None")
+            data_row_list.append("None")
+            data_row_list.append("None")
+            data_row_list.append("None")
 
         # device INfo
-        IP = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[10]/div/div[2]/div/div[1]/div/h6/span')
-        data_row_list.append(IP.text)
-        Browser = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[10]/div/div[2]/div/div[2]/div/h6')
-        data_row_list.append(Browser.text)
-        Browser_Version = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[10]/div/div[2]/div/div[3]/div/h6')
-        data_row_list.append(Browser_Version.text)
-        OS = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[10]/div/div[2]/div/div[4]/div/h6')
-        data_row_list.append(OS.text)
-        Device = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[10]/div/div[2]/div/div[5]/div/h6')
-        data_row_list.append(Device.text)
+        element2 = driver.find_elements(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[10]/div/div[1]/h6')
+        if element2:
+            IP = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[10]/div/div[2]/div/div[1]/div/h6/span')
+            data_row_list.append(IP.text)
+            Browser = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[10]/div/div[2]/div/div[2]/div/h6')
+            data_row_list.append(Browser.text)
+            Browser_Version = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[10]/div/div[2]/div/div[3]/div/h6')
+            data_row_list.append(Browser_Version.text)
+            OS = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[10]/div/div[2]/div/div[4]/div/h6')
+            data_row_list.append(OS.text)
+            Device = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[10]/div/div[2]/div/div[5]/div/h6')
+            data_row_list.append(Device.text)
+        else:
+            data_row_list.append("None")
+            data_row_list.append("None")
+            data_row_list.append("None")
+            data_row_list.append("None")
+            data_row_list.append("None")
 
-        Document_Link_Status = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[11]/div/div[2]/div[2]/div[2]/div/h6')
-        data_row_list.append(Document_Link_Status.text)
+        # Document Link Status
+        element3 = driver.find_elements(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[11]/div/div[1]/h6')
+        if element3:
+            Document_Link_Status = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[11]/div/div[2]/div[2]/div[2]/div/h6')
+            data_row_list.append(Document_Link_Status.text)
+        else:
+            data_row_list.append("None")
 
         selfie_url = driver.find_element(By.XPATH, '//*[@id="tab_block_1"]/div/div/div[5]/div/div[2]/div/div/img')
         image_url = selfie_url.get_attribute('src')
         data_row_list.append(image_url)
 
         data_list.append(data_row_list)
-        with open('data.csv', 'a+', newline='', encoding='utf-8') as csvfile:
+        with open('data1.csv', 'a+', newline='', encoding='utf-8') as csvfile:
             writer = csv.writer(csvfile, delimiter=',')
             writer.writerows(data_list) 
 
@@ -263,6 +299,5 @@ def download_image_with_session(driver, image_url, save_path, filename):
 
 try:
     login_to_we_kyc(driver)
-    set_search_filters(driver, one_month_ago, ORDER_ID)
 finally:
     driver.quit()
