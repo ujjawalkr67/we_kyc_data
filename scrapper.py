@@ -13,8 +13,8 @@ from selenium.webdriver.common.keys import Keys
 
 LOGIN_URL = "https://portal.wekyc.io/auth/login"
 DISCOVERY_URL = "https://portal.wekyc.io/merchant/completed_kyc_links"
-EMAIL = "trade@dollarpe.com"
-PASSWORD = "Doll@rPe@10"
+EMAIL = ""
+PASSWORD = ""
 
 
 one_month_ago = (datetime.now() - timedelta(days=30)).strftime('%d-%m-%Y')
