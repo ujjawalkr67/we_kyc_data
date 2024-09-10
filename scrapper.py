@@ -6,6 +6,7 @@ import requests
 import time
 from datetime import datetime, timedelta
 from selenium import webdriver
+from selenium.webdriver import ChromeOptions
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -13,13 +14,14 @@ from selenium.webdriver.common.keys import Keys
 
 LOGIN_URL = "https://portal.wekyc.io/auth/login"
 DISCOVERY_URL = "https://portal.wekyc.io/merchant/completed_kyc_links"
-EMAIL = "trade@dollarpe.com"
-PASSWORD = "Doll@rPe@10"
+EMAIL = ""
+PASSWORD = ""
 
 
 one_month_ago = (datetime.now() - timedelta(days=30)).strftime('%d-%m-%Y')
-# print(one_month_ago)
-driver = webdriver.Chrome()
+options = ChromeOptions()
+options.add_argument("--headless=new")
+driver = webdriver.Chrome(options=options)
 
 
 def login_to_we_kyc(driver):
@@ -293,9 +295,7 @@ def download_image(image_url, file_path):
             file_extension = image_url.split(".")[-1]
             with open(f"{file_path}.{file_extension}", "wb") as img_file:
                 img_file.write(response.content)
-            print(
-                f"Image downloaded and saved as {file_path}.{file_extension}"
-            )
+            # print( f"Image downloaded and saved as {file_path}.{file_extension}")
         else:
             print(f"Failed to download image from {image_url}")
 
@@ -312,7 +312,7 @@ def download_image_with_session(driver, image_url, save_path, filename):
         response.raise_for_status()
         with open(os.path.join(save_path, filename), 'wb') as file:
             file.write(response.content)
-        print(f"Image saved as {filename}")
+        # print(f"Image saved as {filename}")
     except Exception as e:
         print(f"Failed to download image {image_url}: {str(e)}")
 
